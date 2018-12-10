@@ -80,7 +80,7 @@ specColor <- c(RColorBrewer::brewer.pal(n = 11, name = "Spectral"),RColorBrewer:
 #specColor[ c(grep('abie',specNames),grep('pice',specNames)) ] <- 'blue'
 
 pl   <- list(SMALLPLOTS = F, GRIDPLOTS=T, specColor = specColor)
-gjamPlot(output = out.eff, plotPars = pl)
+gjamPlot(output = out.eff)
 
 saveRDS(out.eff,"initial_GJAM_PLS_in_point_test_effort.rds")
 
