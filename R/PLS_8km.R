@@ -14,11 +14,11 @@ xdata <- pls[,c("MAP1910", "GS_ppet", "sandpct")]
 rl   <- list(r = 8, N = 20)
 # create a modelList object to feed into gjam()
 # ng is number of gibbs samples, burnin = burn in period
-# typenames is teh typ of data
+# typenames is the type of data
 # note this model has effort = null
 #effort = NULL, list containing 'columns', a vector of length <= S giving the names of columns in in y, and 'values', a length-n vector of effort or a n by S matrix (see Examples). effort can be plot area, search time, etc. for discrete count data 'DA
 
-# creat model list
+# create model list
 ml   <- list(ng = 2500, burnin = 500, typeNames = 'DA', reductList = rl)
 
 # specify formula (here this is just a test model):
@@ -38,3 +38,44 @@ pl   <- list(SMALLPLOTS = F, GRIDPLOTS=T, specColor = specColor)
 gjamPlot(output = out, plotPars = pl)
 
 saveRDS(out,"initial_GJAM_PLS_8km_test.rds")
+
+
+
+# some initial model assessment of the 8km simple model:
+
+
+
+# make a map of predicted Oak density based on environment:
+out <- readRDS("initial_GJAM_PLS_8km_test.rds")
+pred.out <- data.frame(out$prediction$ypredMu)
+pred.out$x <- pls$x
+pred.out$y <- pls$y
+
+
+
+ggplot(pred.out, aes(x,y, color = Oak))+geom_point(size = 0.0005)
+test.preds <- pred.out
+test.preds$Oak_discrete <- ifelse(test.preds$Oak < 1, "0", 
+                                  ifelse(test.preds$Oak >= 1 & test.preds$Oak < 25, "1-25",
+                                         ifelse(test.preds$Oak >= 25 & test.preds$Oak < 50, "25-50", 
+                                                ifelse( test.preds$Oak >= 50 & test.preds$Oak < 100, "50-100", 
+                                                        ifelse(test.preds$Oak >= 100 & test.preds$Oak < 200, "100-200", 
+                                                               ifelse(test.preds$Oak >= 200 & test.preds$Oak < 400, "200-400",
+                                                                      ifelse(test.preds$Oak >= 400, ">400", NA)))))))
+
+ggplot(test.preds, aes(x,y, color = Oak_discrete))+geom_point(size = 0.0005)
+
+obs.out <- data.frame(out$prediction$yPresentMu)
+obs.out$x <- trees.spec.clim.eff$x
+obs.out$y <- trees.spec.clim.eff$y
+
+test.preds$pred_obs <- test.preds$Oak - obs.out$Oak
+
+p.os <- pred.out-obs.out
+p.os$x <- pred.out$x
+p.os$y <- pred.out$y
+
+ggplot(p.os, aes(x,y, color = Oak))+geom_point(size = 0.05)+scale_color_gradient2(midpoint = -50)
+
+
+

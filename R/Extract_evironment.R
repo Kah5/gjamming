@@ -4,8 +4,9 @@
 library(raster)
 library(sp)
 library(tidyr)
+
 # This script will extract environmental data we are interested in at the pls point level:
-load("data/cleaned_point.Rda") # read in cleaned point data from whole midwest (from plsproducts)
+load("data/point_with_density.Rda") # read in cleaned point data from whole midwest (from PLSproducts workflow)
 
 # combine environmental and point level pls data:
 
@@ -83,9 +84,10 @@ melted.mo$yrs <- substring(melted.mo$variable, first = 24, last = 27)
 melted.mo$mos <- substring(melted.mo$variable, first = 28, last = 29)
 
 #calculate means for months
-full<- dcast(melted.mo, x + y ~ mos, mean , value.var='value', na.rm = TRUE)
-full<- data.frame(full)
+full <- dcast(melted.mo, x + y ~ mos, mean , value.var='value', na.rm = TRUE)
+full <- data.frame(full)
 full$total <- rowSums(full[,3:14])
+
 colnames(full) <- c('x','y','Jan', 'Feb', 'Mar', "Apr", "May", 
                     'Jun', "Jul", "Aug", "Sep", "Oct", "Nov","Dec",'total')
 
@@ -112,7 +114,7 @@ write.csv(avgs.df, paste0(workingdir,"outputs/pr_monthly_Prism_",yrs,"_full_poin
 
 colnames(avgs.df)[1:13] <- paste0(colnames(avgs.df)[1:13], "_pr")
 head(avgs.df)
-mw.new<- merge( mw,avgs.df, by = c("x", "y"))
+mw.new <- merge( mw, avgs.df, by = c("x", "y"))
 
 
 # -------------------extract temperature data
@@ -155,8 +157,11 @@ melted.mo$yrs <- substring(melted.mo$variable, first = 26, last = 29)
 melted.mo$mos <- substring(melted.mo$variable, first = 30, last = 31)
 full<- dcast(melted.mo, x + y ~ mos, mean , value.var='value', na.rm = TRUE)
 full$Mean <- rowMeans(full[,3:14])
+
 colnames(full) <- c('x','y','Jan', 'Feb', 'Mar', "Apr", "May", 
                     'Jun', "Jul", "Aug", "Sep", "Oct", "Nov","Dec",'Mean')
+
+full$DJFmean <- rowMeans(full[,c("Dec", "Jan", "Feb")])
 test <- full
 
 #calculate the CV temperature seasonality:
